@@ -1,0 +1,17 @@
+[
+    {
+      "name": "Magnus Carlsen",
+      "image": "https://www.onlinegambling.com/news/wp-content/uploads/2020/08/Magnus-Carlsen-Tour-Final-1.jpg",
+      "description": "Magnus Carlsen is a Norwegian chess grandmaster and former World Chess Champion, known for his creative and strategic playing style."
+    },
+    {
+      "name": "Garry Kasparov",
+      "image": "https://d2eehagpk5cl65.cloudfront.net/img/c800x450-w800-q80/uploads/2021/11/kasparov_thumb_v02-800x450.jpg",
+      "description": "Garry Kasparov, a Russian grandmaster, dominated the chess world for decades and is considered one of the greatest players of all time."
+    },
+    {
+      "name": "Bobby Fischer",
+      "image": "https://www.thefamouspeople.com/profiles/images/bobby-fischer-8.jpg",
+      "description": "Bobby Fischer was an American chess prodigy and the 11th World Chess Champion, famed for his brilliance and enigmatic personality."
+    }
+]
