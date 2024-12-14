@@ -1,28 +1,41 @@
-<template>    
-    <div class="navbar bg-base-100 w-full">
-  <div class="flex-1">
-    <a class="btn btn-ghost text-xl">ChessMasters</a>
-  </div>
-  <div class="flex-none">
-    <button class="btn btn-square btn-ghost">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        class="inline-block h-5 w-5 stroke-current">
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-      </svg>
-    </button>
-  </div>
-</div>
+<template>
+  <nav class="navbar bg-base-100">
+    <div class="flex-1">
+      <a class="btn btn-ghost normal-case text-xl">Chess Masters</a>
+    </div>
+    <div class="flex-none">
+      <!-- Input bound to searchTerm -->
+      <input
+        type="text"
+        placeholder="Search..."
+        class="input input-bordered"
+        v-model="searchInput"
+      />
+    </div>
+  </nav>
 </template>
 
 <script lang="ts">
-export default {
-    
-};
+import { defineComponent, ref, watch } from "vue";
+
+export default defineComponent({
+  name: "Navbar",
+  props: {
+    searchTerm: {
+      type: String,
+      required: true,
+    },
+  },
+  emits: ["update:searchTerm"],
+  setup(props, { emit }) {
+    const searchInput = ref(props.searchTerm);
+
+    // Watch for input changes and emit back to parent
+    watch(searchInput, (newValue) => {
+      emit("update:searchTerm", newValue);
+    });
+
+    return { searchInput };
+  },
+});
 </script>

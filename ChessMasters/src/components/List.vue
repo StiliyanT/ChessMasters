@@ -4,11 +4,6 @@
         <!-- head -->
         <thead>
           <tr>
-            <th>
-              <label>
-                <input type="checkbox" class="checkbox" />
-              </label>
-            </th>
             <th>Image</th>
             <th>Name</th>
             <th>Description</th>
@@ -18,11 +13,6 @@
         <tbody>
           <!-- Dynamic Rows -->
           <tr v-for="(chessMaster, index) in chessMasters" :key="index" class="hover">
-            <th>
-              <label>
-                <input type="checkbox" class="checkbox" />
-              </label>
-            </th>
             <td>
               <div class="avatar">
                 <div class="mask mask-squircle h-12 w-12">
@@ -54,11 +44,11 @@ export default defineComponent({
       required: true,
     },
   },
-  setup(props) {
-    // Props can be accessed directly in the template or within setup using `props.chessMasters`
-    return {
-      chessMasters: props.chessMasters,
-    };
-  },
+  // setup(props) {
+  //   // Props can be accessed directly in the template or within setup using `props.chessMasters`
+  //   return {
+  //     chessMasters: props.chessMasters,
+  //   };
+  // },
 });
 </script>
