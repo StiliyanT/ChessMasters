@@ -12,7 +12,7 @@
         </thead>
         <tbody>
           <!-- Dynamic Rows -->
-          <tr v-for="(chessMaster, index) in chessMasters" :key="index" class="hover">
+          <tr v-for="(chessMaster, index) in chessMasters" :key="index"  @click="chessMasterClicked(chessMaster)" class="hover">
             <td>
               <div class="avatar">
                 <div class="mask mask-squircle h-12 w-12">
@@ -42,6 +42,11 @@ export default defineComponent({
     chessMasters: {
       type: Array as PropType<ChessMaster[]>,
       required: true,
+    },
+  },
+  methods: {
+    chessMasterClicked(chessMaster: ChessMaster) {
+      this.$emit("chessMasterClicked", chessMaster);
     },
   },
   // setup(props) {

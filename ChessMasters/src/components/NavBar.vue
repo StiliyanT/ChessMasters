@@ -4,38 +4,29 @@
       <a class="btn btn-ghost normal-case text-xl">Chess Masters</a>
     </div>
     <div class="flex-none">
-      <!-- Input bound to searchTerm -->
-      <input
-        type="text"
-        placeholder="Search..."
-        class="input input-bordered"
-        v-model="searchInput"
-      />
+      <!-- Inject the FilterComponent here -->
+      <FilterComponent @update:searchTerm="emitSearchTerm" />
     </div>
   </nav>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, watch } from "vue";
+import FilterComponent from "./FilterComponent.vue";
 
 export default defineComponent({
   name: "Navbar",
-  props: {
-    searchTerm: {
-      type: String,
-      required: true,
-    },
-  },
+  components: { FilterComponent },
   emits: ["update:searchTerm"],
-  setup(props, { emit }) {
-    const searchInput = ref(props.searchTerm);
 
-    // Watch for input changes and emit back to parent
-    watch(searchInput, (newValue) => {
-      emit("update:searchTerm", newValue);
-    });
+  setup(_, { emit }) {
+    const emitSearchTerm = (searchTerm: string) => {
+      emit("update:searchTerm", searchTerm);
+    };
 
-    return { searchInput };
+    return {
+      emitSearchTerm,
+    };
   },
 });
 </script>
