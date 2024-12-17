@@ -25,54 +25,87 @@
             <th>
               <button class="btn btn-ghost btn-xs" @click="chessMasterClicked(chessMaster)">Details</button>
               <!-- Delete button -->
-              <button class="btn btn-ghost btn-xs" @click.stop="deleteChessMaster(chessMaster.name)">
+              <button class="btn btn-error btn-xs" @click="openDeleteModal(chessMaster)" @click.stop="openDeleteModal(chessMaster)">
               Delete
             </button>
             </th>
           </tr>
         </tbody>
       </table>
+      <ConfirmationModal
+      ref="confirmationModal"
+      title="Delete Confirmation"
+      :message="`Are you sure you want to delete '${chessMasterToDelete?.name}'?`"
+      @confirm="confirmDelete"
+      @cancel="chessMasterToDelete = null"
+    />
     </div>
   </template>
 
 <script lang="ts">
-import { defineComponent, type PropType } from "vue";
+import { defineComponent, ref, type PropType } from "vue";
 import { type ChessMaster } from "./object/ChessMasters";
+import ConfirmationModal from "./ConfirmationModal.vue";
 import axios from "axios";
 // Define the type for a ChessMaster object
 
 export default defineComponent({
   name: "ChessMasterList",
+  components: {
+    ConfirmationModal,
+  },
   props: {
     chessMasters: {
       type: Array as PropType<ChessMaster[]>,
       required: true,
     },
   },
-  methods: {
-    chessMasterClicked(chessMaster: ChessMaster) {
-      this.$emit("chessMasterClicked", chessMaster);
-    },
-    // Method to delete a ChessMaster from the list
-    async deleteChessMaster(chessMasterName: string) {
-      try {
-         // Send DELETE request to backend
-         const response = await axios.delete(`http://localhost:3000/api/chessMasters/${chessMasterName}`);
-        
-        // Notify parent to update the list
-        this.$emit("deleteChessMaster", chessMasterName);
+  setup(_, { emit }) {
+    const confirmationModal = ref<InstanceType<typeof ConfirmationModal> | null>(
+      null
+    );
+    const chessMasterToDelete = ref<ChessMaster | null>(null);
 
-        console.log('Delete Response:', response.data);
-      } catch (error) {
-        console.error("Error deleting ChessMaster:", error);
+    // Open modal for confirmation
+    const openDeleteModal = (chessMaster: ChessMaster) => {
+      chessMasterToDelete.value = chessMaster;
+      confirmationModal.value?.showModal();
+    };
+
+    // Confirm and delete the ChessMaster
+    const confirmDelete = async () => {
+      if (chessMasterToDelete.value) {
+        try {
+          // Send DELETE request to backend
+          await axios.delete(
+            `http://localhost:3000/api/chessMasters/${chessMasterToDelete.value.name}`
+          );
+
+          // Notify parent to update the list
+          emit("deleteChessMaster", chessMasterToDelete.value.name);
+          console.log(
+            `Successfully deleted ChessMaster: ${chessMasterToDelete.value.name}`
+          );
+        } catch (error) {
+          console.error("Error deleting ChessMaster:", error);
+        } finally {
+          // Clear selection
+          chessMasterToDelete.value = null;
+        }
       }
-    },
+    };
+
+    const chessMasterClicked = (chessMaster: ChessMaster) => {
+      emit("chessMasterClicked", chessMaster);
+    };
+
+    return {
+      confirmationModal,
+      chessMasterToDelete,
+      openDeleteModal,
+      confirmDelete,
+      chessMasterClicked,
+    };
   },
-  // setup(props) {
-  //   // Props can be accessed directly in the template or within setup using `props.chessMasters`
-  //   return {
-  //     chessMasters: props.chessMasters,
-  //   };
-  // },
 });
 </script>
