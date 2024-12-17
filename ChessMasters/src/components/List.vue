@@ -23,7 +23,11 @@
             <td>{{ chessMaster.name }}</td>
             <td>{{ chessMaster.description }}</td>
             <th>
-              <button class="btn btn-ghost btn-xs">details</button>
+              <button class="btn btn-ghost btn-xs" @click="chessMasterClicked(chessMaster)">Details</button>
+              <!-- Delete button -->
+              <button class="btn btn-ghost btn-xs" @click.stop="deleteChessMaster(chessMaster.name)">
+              Delete
+            </button>
             </th>
           </tr>
         </tbody>
@@ -34,6 +38,7 @@
 <script lang="ts">
 import { defineComponent, type PropType } from "vue";
 import { type ChessMaster } from "./object/ChessMasters";
+import axios from "axios";
 // Define the type for a ChessMaster object
 
 export default defineComponent({
@@ -47,6 +52,20 @@ export default defineComponent({
   methods: {
     chessMasterClicked(chessMaster: ChessMaster) {
       this.$emit("chessMasterClicked", chessMaster);
+    },
+    // Method to delete a ChessMaster from the list
+    async deleteChessMaster(chessMasterName: string) {
+      try {
+         // Send DELETE request to backend
+         const response = await axios.delete(`http://localhost:3000/api/chessMasters/${chessMasterName}`);
+        
+        // Notify parent to update the list
+        this.$emit("deleteChessMaster", chessMasterName);
+
+        console.log('Delete Response:', response.data);
+      } catch (error) {
+        console.error("Error deleting ChessMaster:", error);
+      }
     },
   },
   // setup(props) {

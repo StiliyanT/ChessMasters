@@ -5,7 +5,11 @@
   <div>
     <Navbar v-model:searchTerm="searchTerm" />
    
-    <ChessMastersList :chessMasters="filteredChessMasters" @chessMasterClicked="showCard"/>
+    <ChessMastersList 
+      :chessMasters="filteredChessMasters" 
+      @chessMasterClicked="showCard"
+       @deleteChessMaster="removeChessMaster"
+    />
     
     <ChessMasterCard
       v-if="showCardModal"
@@ -21,10 +25,11 @@
 <script lang="ts">
 import Navbar from './components/NavBar.vue';
 import ChessMastersList from './components/List.vue';
-import { defineComponent, ref, computed } from "vue";
-import chessMastersMock from "@/assets/data.json"
+import { defineComponent, ref, computed, onMounted } from "vue";
+import chessMastersData from "./backend/data/data.json"
 import type { ChessMaster } from './components/object/ChessMasters';
 import ChessMasterCard from './components/ChessMasterCard.vue';
+import axios from "axios";
 
 export default defineComponent({
   name: "App",
@@ -35,9 +40,9 @@ export default defineComponent({
   },
   setup() {
     // Use mock data from the JSON file
-    const chessMastersList: ChessMaster[] = chessMastersMock;
+    const chessMastersList: ChessMaster[] = chessMastersData;
     const searchTerm = ref("");
-    const chessMasters = ref(chessMastersList);
+    const chessMasters = ref<ChessMaster[]>(chessMastersList);
 
     // Modal visibility and selected chess master data
     const showCardModal = ref(false);
@@ -68,12 +73,44 @@ export default defineComponent({
       showCardModal.value = false;
     };
 
+    // Fetch chess masters from the backend
+    const fetchChessMasters = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/chessMasters");
+        chessMasters.value = response.data; // Update chessMasters with the fetched data
+      } catch (error) {
+        console.error("Error fetching chess masters:", error);
+        // Optionally, handle the error and keep the mock data as fallback
+      }
+    };
+    
+    // Remove a chess master from the list (after successful deletion)
+    // Remove a chess master from the list (after successful deletion)
+    const removeChessMaster = (chessMasterName: string) => {
+      // Send a DELETE request to the server
+      axios
+        .delete(`http://localhost:3000/api/chessMasters/${chessMasterName}`)
+        .then(() => {
+          // Filter out the deleted chess master from the list
+          chessMasters.value = chessMasters.value.filter(
+            (chessMaster) => chessMaster.name !== chessMasterName
+          );
+        })
+        .catch((error) => {
+          console.error("Error deleting chess master:", error);
+        });
+      };
+    // Initial fetch of chess masters
+    onMounted(fetchChessMasters);
+
     return { 
       chessMastersList,
       searchTerm,
+      chessMasters,
       filteredChessMasters,
       showCardModal,
       selectedChessMaster,
+      removeChessMaster,
       showCard,
       closeCard,
      };
