@@ -3,7 +3,10 @@
 <template>
 
   <div>
-    <Navbar v-model:searchTerm="searchTerm" />
+    <Navbar 
+    v-model:searchTerm="searchTerm" 
+    @openAddModal="showAddModal = true"
+    />
    
     <ChessMastersList 
       :chessMasters="filteredChessMasters" 
@@ -19,16 +22,24 @@
       :showCardModal="showCardModal"
       @close="closeCard"
     />
+
+    <AddChessMasterModal
+      v-if="showAddModal"
+      @create="addChessMaster"
+      @close="showAddModal = false"
+      ref="addModalRef" 
+    />
   </div>
 </template>
 
 <script lang="ts">
 import Navbar from './components/NavBar.vue';
 import ChessMastersList from './components/List.vue';
-import { defineComponent, ref, computed, onMounted } from "vue";
+import { defineComponent, ref, computed, onMounted, watch, nextTick } from "vue";
 import chessMastersData from "./backend/data/data.json"
 import type { ChessMaster } from './components/object/ChessMasters';
 import ChessMasterCard from './components/ChessMasterCard.vue';
+import AddChessMasterModal from './components/AddChessMasterModal.vue';
 import axios from "axios";
 
 export default defineComponent({
@@ -37,17 +48,35 @@ export default defineComponent({
     ChessMastersList,
     Navbar,
     ChessMasterCard,
+    AddChessMasterModal,
   },
   setup() {
     // Use mock data from the JSON file
     const chessMastersList: ChessMaster[] = chessMastersData;
     const searchTerm = ref("");
     const chessMasters = ref<ChessMaster[]>(chessMastersList);
-
+    const showAddModal = ref(false);
     // Modal visibility and selected chess master data
     const showCardModal = ref(false);
+    console.log('showAddModal value:', showAddModal.value);
     const selectedChessMaster = ref<ChessMaster>({ image: '', name: '', description: '' });
 
+    const addModalRef = ref<InstanceType<typeof AddChessMasterModal> | null>(null);
+
+
+      // Watch `showAddModal` to call `openModal` on change
+      watch(() => showAddModal.value, async (newValue) => {
+  console.log("showAddModal changed:", newValue);
+  if (newValue) {
+    // Wait for the DOM to be updated before trying to access addModalRef
+    await nextTick();
+    console.log("addModalRef:", addModalRef.value); // Debugging line
+    if (addModalRef.value) {
+      addModalRef.value.openModal(); // Open the modal when showAddModal becomes true
+    }
+  }
+});
+    
     // Computed property to filter chess masters based on the search term
     const filteredChessMasters = computed(() => {
       if (!searchTerm.value.trim()) {
@@ -66,11 +95,23 @@ export default defineComponent({
     const showCard = (chessMaster: ChessMaster) => {
       selectedChessMaster.value = chessMaster;
       showCardModal.value = true;
+      console.log('showAddModal value:', showAddModal.value);
     };
 
     // Method to close the card modal
     const closeCard = () => {
       showCardModal.value = false;
+    };
+
+   const addChessMaster = async (newChessMaster: ChessMaster) => {
+      try {
+        const response = await axios.post("http://localhost:3000/api/chessMasters", newChessMaster);
+        console.log("Added chess master:", response.data);
+        chessMasters.value.push(newChessMaster); // Optimistically update the list
+        showAddModal.value = false;
+      } catch (error) {
+        console.error("Error adding chess master:");
+      }
     };
 
     // Fetch chess masters from the backend
@@ -109,10 +150,13 @@ export default defineComponent({
       chessMasters,
       filteredChessMasters,
       showCardModal,
+      showAddModal,
       selectedChessMaster,
+      addChessMaster,
       removeChessMaster,
       showCard,
       closeCard,
+      addModalRef
      };
   },
 });

@@ -45,6 +45,23 @@ app.delete('/api/chessMasters/:name', (req, res) => {
   res.status(200).json({ message: "Chess master deleted successfully." });
 });
 
+app.post("/api/chessMasters", (req, res) => {
+  const newChessMaster = req.body;
+
+  if (!newChessMaster.name || !newChessMaster.image || !newChessMaster.description) {
+    return res.status(400).json({ error: "All fields are required." });
+  }
+
+  // Add new chess master to the list
+  const data = readData();
+  data.push(newChessMaster);
+
+  // Save updated data to the JSON file
+  fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
+
+  res.status(201).json({ message: "Chess master added successfully", newChessMaster });
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
