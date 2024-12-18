@@ -62,6 +62,41 @@ app.post("/api/chessMasters", (req, res) => {
   res.status(201).json({ message: "Chess master added successfully", newChessMaster });
 });
 
+app.put("/api/chessMasters", (req, res) => {
+  const modifiedChessMaster = req.body;
+
+  // Validate the input
+  if (!modifiedChessMaster.name || !modifiedChessMaster.image || !modifiedChessMaster.description) {
+    return res.status(400).json({ error: "All fields (name, image, description) are required." });
+  }
+
+  let data = readData();
+
+  // Find the chess master to update
+  const index = data.findIndex((chessMaster) => chessMaster.name === modifiedChessMaster.name);
+
+  // If not found, return a 404 error
+  if (index === -1) {
+    return res.status(404).json({ error: "Chess master not found." });
+  }
+
+  // Update the chess master's details
+  data[index] = {
+    ...data[index], // Retain existing fields
+    image: modifiedChessMaster.image,
+    description: modifiedChessMaster.description,
+  };
+
+  // Save the updated data back to the file
+  fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
+
+  // Respond with success
+  res.status(200).json({
+    message: "Chess master updated successfully",
+    modifiedChessMaster: modifiedChessMaster,
+  });
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

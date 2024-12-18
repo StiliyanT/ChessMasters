@@ -2,32 +2,59 @@
     <!-- Add ChessMaster Modal -->
     <dialog id="addChessMasterModal" class="modal modal-bottom sm:modal-middle" ref="modalRef">
       <div class="modal-box">
-        <h3 class="text-lg font-bold mb-4">Add New Chess Master</h3>
+        <h3 class="text-lg font-bold mb-4">
+          {{ isEditMode ? "Edit Chess Master" : "Add New Chess Master" }}
+        </h3>
         <!-- Form -->
         <form @submit.prevent="submitForm">
+          <!-- Name Input -->
           <div class="form-control mb-4">
             <label class="label">
               <span class="label-text">Name</span>
             </label>
-            <input type="text" v-model="formData.name" placeholder="Enter name" class="input input-bordered" required />
+            <input
+              type="text"
+              v-model="formData.name"
+              placeholder="Enter name"
+              class="input input-bordered"
+              :disabled="isEditMode"
+              required
+            />
           </div>
   
+          <!-- Image Link Input -->
           <div class="form-control mb-4">
             <label class="label">
               <span class="label-text">Image Link</span>
             </label>
-            <input type="url" v-model="formData.image" placeholder="Enter image URL" class="input input-bordered" required />
+            <input
+              type="url"
+              v-model="formData.image"
+              placeholder="Enter image URL"
+              class="input input-bordered"
+              required
+            />
           </div>
   
+          <!-- Description Input -->
           <div class="form-control mb-4">
             <label class="label">
               <span class="label-text">Description</span>
             </label>
-            <textarea v-model="formData.description" placeholder="Enter description" class="textarea textarea-bordered" rows="4" required></textarea>
+            <textarea
+              v-model="formData.description"
+              placeholder="Enter description"
+              class="textarea textarea-bordered"
+              rows="4"
+              required
+            ></textarea>
           </div>
   
+          <!-- Modal Action Buttons -->
           <div class="modal-action">
-            <button type="submit" class="btn btn-primary">Create</button>
+            <button type="submit" class="btn btn-primary">
+              {{ isEditMode ? "Update" : "Create" }}
+            </button>
             <button type="button" class="btn" @click="closeModal">Cancel</button>
           </div>
         </form>
@@ -36,12 +63,23 @@
   </template>
   
   <script lang="ts">
-  import { defineComponent, ref, onMounted } from "vue";
+  import { defineComponent, ref, watch, type PropType } from "vue";
+  import type { ChessMaster } from "./object/ChessMasters";
   
   export default defineComponent({
     name: "AddChessMasterModal",
-    emits: ["create", "close"],
-    setup(_, { emit }) {
+    emits: ["create", "update", "close"],
+    props: {
+      initialData: {
+        type: Object as PropType<ChessMaster | null>,
+        default: null,
+      },
+      isEditMode: {
+        type: Boolean,
+        default: false,
+      },
+    },
+    setup(props, { emit }) {
       const formData = ref({
         name: "",
         image: "",
@@ -50,37 +88,50 @@
   
       const modalRef = ref<HTMLDialogElement | null>(null);
   
-      // Method to submit the form
+      // Watch for changes in initialData and update formData
+      watch(
+        () => props.initialData,
+        (newData) => {
+          if (newData) {
+            formData.value = { ...newData };
+          }
+        },
+        { immediate: true, deep: true }
+      );
+  
+      // Submit the form
       const submitForm = () => {
-        emit("create", { ...formData.value });
-        formData.value = { name: "", image: "", description: "" };
+        if (!formData.value.name || !formData.value.image || !formData.value.description) {
+          console.warn("All fields are required.");
+          return;
+        }
+  
+        if (props.isEditMode) {
+          emit("update", { ...formData.value });
+        } else {
+          emit("create", { ...formData.value });
+        }
+  
         closeModal();
       };
   
-      // Method to close the modal
+      // Close the modal
       const closeModal = () => {
         emit("close");
         if (modalRef.value) {
-          modalRef.value.close();  // Close the modal programmatically
+          modalRef.value.close();
         }
       };
   
-      // Method to open the modal
+      // Open the modal
       const openModal = () => {
-        console.log("modal checker")
         if (modalRef.value) {
           modalRef.value.showModal();
-          console.log("modal opens")  // Open the modal programmatically
+          console.log("Modal opened successfully.");
+        } else {
+          console.error("Modal ref is not defined.");
         }
       };
-  
-      onMounted(() => {
-        if (modalRef.value) {
-          modalRef.value.addEventListener("close", () => {
-            console.log("Modal closed");  // You can add some debugging here
-          });
-        }
-      });
   
       return {
         formData,
@@ -92,9 +143,10 @@
     },
   });
   </script>
-
+  
   <style scoped>
-.modal {
-  z-index: 9999 !important; /* Ensure it's on top of other elements */
-}
-</style>
+  .modal {
+    z-index: 9999 !important; /* Ensure it's on top of other elements */
+  }
+  </style>
+  

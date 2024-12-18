@@ -24,6 +24,8 @@
             <td>{{ chessMaster.description }}</td>
             <th>
               <button class="btn btn-ghost btn-xs" @click="chessMasterClicked(chessMaster)">Details</button>
+               <!-- Update Button -->
+              <button class="btn btn-primary btn-xs" @click="emitUpdate(chessMaster)">Update</button>
               <!-- Delete button -->
               <button class="btn btn-error btn-xs" @click="openDeleteModal(chessMaster)" @click.stop="openDeleteModal(chessMaster)">
               Delete
@@ -60,6 +62,7 @@ export default defineComponent({
       required: true,
     },
   },
+  emits: ["deleteChessMaster", "updateChessMaster", "chessMasterClicked"],
   setup(_, { emit }) {
     const confirmationModal = ref<InstanceType<typeof ConfirmationModal> | null>(
       null
@@ -99,12 +102,18 @@ export default defineComponent({
       emit("chessMasterClicked", chessMaster);
     };
 
+    // Emit event for updating a chess master
+    const emitUpdate = (chessMaster: ChessMaster) => {
+      emit("updateChessMaster", chessMaster);
+    };
+
     return {
       confirmationModal,
       chessMasterToDelete,
       openDeleteModal,
       confirmDelete,
       chessMasterClicked,
+      emitUpdate
     };
   },
 });

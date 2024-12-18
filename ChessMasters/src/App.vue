@@ -11,7 +11,8 @@
     <ChessMastersList 
       :chessMasters="filteredChessMasters" 
       @chessMasterClicked="showCard"
-       @deleteChessMaster="removeChessMaster"
+      @updateChessMaster="editChessMaster"
+      @deleteChessMaster="removeChessMaster"
     />
     
     <ChessMasterCard
@@ -25,7 +26,10 @@
 
     <AddChessMasterModal
       v-if="showAddModal"
+      :initialData="editableChessMaster"
+      :isEditMode="editMode"
       @create="addChessMaster"
+      @update="saveEditedChessMaster"
       @close="showAddModal = false"
       ref="addModalRef" 
     />
@@ -124,6 +128,34 @@ export default defineComponent({
         // Optionally, handle the error and keep the mock data as fallback
       }
     };
+
+    const editMode = ref(false); // Track whether the modal is in edit mode
+    const editableChessMaster = ref<ChessMaster | null>(null); // The chess master being edited
+    
+    const editChessMaster = (chessMaster: ChessMaster) => {
+      editableChessMaster.value = { ...chessMaster }; // Clone the chess master to avoid direct mutation
+      showAddModal.value = true;
+      editMode.value = true;
+    };
+
+    const saveEditedChessMaster = async (updatedChessMaster: ChessMaster) => {
+      try {
+        await axios.put("http://localhost:3000/api/chessMasters", updatedChessMaster);
+
+        // Update the local data
+        const index = chessMasters.value.findIndex(cm => cm.name === updatedChessMaster.name);
+        if (index !== -1) {
+          chessMasters.value[index] = updatedChessMaster;
+        }
+
+        showAddModal.value = false;
+        editMode.value = false;
+        editableChessMaster.value = null;
+      } catch (error) {
+        console.error("Error updating chess master:", error);
+      }
+    };
+    
     
     // Remove a chess master from the list (after successful deletion)
     // Remove a chess master from the list (after successful deletion)
@@ -152,10 +184,14 @@ export default defineComponent({
       showCardModal,
       showAddModal,
       selectedChessMaster,
+      editMode,
+      editableChessMaster,
       addChessMaster,
       removeChessMaster,
       showCard,
       closeCard,
+      editChessMaster,
+      saveEditedChessMaster,
       addModalRef
      };
   },
